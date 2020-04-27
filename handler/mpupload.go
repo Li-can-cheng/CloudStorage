@@ -134,7 +134,7 @@ func CompleteUploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 4. TODO：合并分块
+	// 4. 合并分块
 
 	// 5. 更新唯一文件表及用户文件表
 	fsize, _ := strconv.Atoi(filesize)

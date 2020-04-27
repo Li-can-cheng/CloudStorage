@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	cmn "cloudstorage-server/common"
 	cfg "cloudstorage-server/config"
 	dblayer "cloudstorage-server/db"
@@ -10,6 +9,7 @@ import (
 	"cloudstorage-server/store/ceph"
 	"cloudstorage-server/store/oss"
 	"cloudstorage-server/util"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -222,7 +222,7 @@ func FileMetaUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	curFileMeta.FileName = newFileName
 	meta.UpdateFileMeta(curFileMeta)
 
-	// TODO: 更新文件表中的元信息记录
+	// 更新文件表中的元信息记录
 
 	data, err := json.Marshal(curFileMeta)
 	if err != nil {
@@ -243,7 +243,7 @@ func FileDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	os.Remove(fMeta.Location)
 	// 删除文件元信息
 	meta.RemoveFileMeta(fileSha1)
-	// TODO: 删除表文件信息
+	// 删除表文件信息
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -301,7 +301,7 @@ func DownloadURLHandler(w http.ResponseWriter, r *http.Request) {
 	// 从文件表查找记录
 	row, _ := dblayer.GetFileMeta(filehash)
 
-	// TODO: 判断文件存在OSS，还是Ceph，还是在本地
+	// 判断文件存在OSS，还是Ceph，还是在本地
 	if strings.HasPrefix(row.FileAddr.String, "/tmp") {
 		username := r.Form.Get("username")
 		token := r.Form.Get("token")
@@ -309,7 +309,7 @@ func DownloadURLHandler(w http.ResponseWriter, r *http.Request) {
 			r.Host, filehash, username, token)
 		w.Write([]byte(tmpUrl))
 	} else if strings.HasPrefix(row.FileAddr.String, "/ceph") {
-		// TODO: ceph下载url
+		// ceph下载url
 		cephUrl := ceph.GetCephUrl(cfg.CephBucket, filehash)
 		// w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/octect-stream")
