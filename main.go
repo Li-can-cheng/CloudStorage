@@ -43,7 +43,7 @@ func main() {
 	http.HandleFunc("/user/signin", handler.SignInHandler)
 	http.HandleFunc("/user/info", handler.HTTPInterceptor(handler.UserInfoHandler))
 
-	fmt.Printf("上传服务启动中，开始监听[%s]...\n", cfg.UploadServiceHost)
+	fmt.Printf("服务启动中，开始监听[%s]...\n", cfg.UploadServiceHost)
 	// 启动服务并监听端口
 	err := http.ListenAndServe(cfg.UploadServiceHost, nil)
 	if err != nil {

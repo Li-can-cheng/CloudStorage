@@ -5,12 +5,14 @@ import (
 	"cloudstorage-server/util"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 const (
-	// 用于加密的盐
-	pwdSalt = "*#890"
+	// 用于加密的盐值
+	pwdSalt    = "*#443"
+	token_salt = "*#965"
 )
 
 // SignupHandler : 处理用户注册请求
@@ -49,12 +51,6 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 // SignInHandler : 登录接口
 func SignInHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		// data, err := ioutil.ReadFile("./static/view/signin.html")
-		// if err != nil {
-		// 	w.WriteHeader(http.StatusInternalServerError)
-		// 	return
-		// }
-		// w.Write(data)
 		http.Redirect(w, r, "/static/view/signin.html", http.StatusFound)
 		return
 	}
@@ -81,7 +77,6 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3. 登录成功后重定向到首页
-	//w.Write([]byte("http://" + r.Host + "/static/view/home.html"))
 	resp := util.RespMsg{
 		Code: 0,
 		Msg:  "OK",
@@ -103,23 +98,15 @@ func UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. 解析请求参数
 	r.ParseForm()
 	username := r.Form.Get("username")
-	//	token := r.Form.Get("token")
 
-	// // 2. 验证token是否有效
-	// isValidToken := IsTokenValid(token)
-	// if !isValidToken {
-	// 	w.WriteHeader(http.StatusForbidden)
-	// 	return
-	// }
-
-	// 3. 查询用户信息
+	// 2. 查询用户信息
 	user, err := dblayer.GetUserInfo(username)
 	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
-	// 4. 组装并且响应用户数据
+	// 3. 组装并且响应用户数据
 	resp := util.RespMsg{
 		Code: 0,
 		Msg:  "OK",
@@ -130,10 +117,10 @@ func UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 // GenToken : 生成token
 func GenToken(username string) string {
-	// 40位字符:md5(username+timestamp+token_salt)+timestamp[:8]
+	// 40位字符:md5(username+timestamp+token_salt)+timestamp[-8:]
 	ts := fmt.Sprintf("%x", time.Now().Unix())
-	tokenPrefix := util.MD5([]byte(username + ts + "_tokensalt"))
-	return tokenPrefix + ts[:8]
+	tokenPrefix := util.MD5([]byte(username + ts + token_salt))
+	return tokenPrefix + util.Reverse(util.Reverse(ts)[:8])
 }
 
 // IsTokenValid : token是否有效
@@ -141,8 +128,29 @@ func IsTokenValid(token string) bool {
 	if len(token) != 40 {
 		return false
 	}
-	// TODO: 判断token的时效性，是否过期
-	// TODO: 从数据库表tbl_user_token查询username对应的token信息
-	// TODO: 对比两个token是否一致
-	return true
+	// 判断token的时效性和正确性
+	validDuration := int64(43200) // 12小时时效
+	tokenCreatedAt, err := strconv.ParseInt(token[32:], 16, 0)
+	if err != nil {
+		fmt.Println("fail to get timestamp from token.")
+	}
+	timestamp := fmt.Sprintf("%x", time.Now().Unix())
+	ts := util.Reverse(util.Reverse(timestamp)[:8])
+	current, err := strconv.ParseInt(ts, 16, 0)
+	if err != nil {
+		fmt.Println("fail to get timestamp from nowtime.")
+	}
+	if current-tokenCreatedAt > validDuration {
+		fmt.Println("token has expired.")
+		return false
+	}
+	if tokenCreatedAt > current {
+		fmt.Println("token is invaild.")
+		return false
+	}
+
+	// 从数据库表tbl_user_token查询username对应的token信息
+	// 对比两个token是否一致
+	valid := dblayer.CheckToken(token)
+	return valid
 }

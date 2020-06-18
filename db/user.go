@@ -79,6 +79,27 @@ func UpdateToken(username string, token string) bool {
 	return true
 }
 
+//CheckToken: check whether token in database
+func CheckToken(token string) bool {
+	stmt, err := mydb.DBConn().Prepare(
+		"select * from tbl_user_token where user_token=? limit 1")
+	if err != nil {
+		return false
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(token)
+	if err != nil || rows == nil {
+		return false
+	}
+	pRows := mydb.ParseRows(rows)
+	if len(pRows) == 0 {
+		fmt.Println("token not found.")
+		return false
+	}
+	return true
+}
+ 
 // GetUserInfo : 查询用户信息
 func GetUserInfo(username string) (User, error) {
 	user := User{}
