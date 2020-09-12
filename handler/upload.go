@@ -221,9 +221,7 @@ func FileMetaUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	curFileMeta := meta.GetFileMeta(fileSha1)
 	curFileMeta.FileName = newFileName
 	meta.UpdateFileMeta(curFileMeta)
-
-	// 更新文件表中的元信息记录
-
+	// TODO: 更新文件表中的元信息记录
 	data, err := json.Marshal(curFileMeta)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -243,7 +241,7 @@ func FileDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	os.Remove(fMeta.Location)
 	// 删除文件元信息
 	meta.RemoveFileMeta(fileSha1)
-	// 删除表文件信息
+	// TODO: 删除表文件信息
 
 	w.WriteHeader(http.StatusOK)
 }

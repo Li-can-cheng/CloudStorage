@@ -1,6 +1,6 @@
 package common
 
-// 存储类型(表示文件存到哪里)
+// 存储位置类型
 type StoreType int
 
 const (
@@ -9,10 +9,10 @@ const (
 	StoreLocal
 	// StoreCeph : Ceph集群
 	StoreCeph
-	// StoreOSS : 阿里OSS
+	// StoreOSS : OSS
 	StoreOSS
 	// StoreMix : 混合(Ceph及OSS)
 	StoreMix
-	// StoreAll : 所有类型的存储都存一份数据
+	// StoreAll : 所有类型的存储都备份数据
 	StoreAll
 )

@@ -79,7 +79,7 @@ func UpdateToken(username string, token string) bool {
 	return true
 }
 
-//CheckToken: check whether token in database
+//CheckToken: 检查token是否有效
 func CheckToken(token string) bool {
 	stmt, err := mydb.DBConn().Prepare(
 		"select * from tbl_user_token where user_token=? limit 1")
@@ -99,7 +99,7 @@ func CheckToken(token string) bool {
 	}
 	return true
 }
- 
+
 // GetUserInfo : 查询用户信息
 func GetUserInfo(username string) (User, error) {
 	user := User{}
